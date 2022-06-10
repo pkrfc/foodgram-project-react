@@ -1,14 +1,14 @@
 from djoser.views import UserViewSet
-from .serializers import SingUpSerializer, TagSerializer, SubscribeSerializer, IngredientSerializer
+from .serializers import SingUpSerializer, TagSerializer, SubscribeSerializer, IngredientSerializer, RecipeIngredientsSerializer, RecipeSerializer, CustomUserSerializer
 from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
 from users.models import CustomUser, Subscribe
-from recipes.models import Tag, Ingredient
+from recipes.models import Tag, Ingredient, Recipe, RecipeIngredients, Favorite, Purchase
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 
 
 class CustomUserViewSet(UserViewSet):
-    serializer_class = SingUpSerializer
+    serializer_class = CustomUserSerializer
     queryset = CustomUser.objects.all()
 
 
@@ -35,3 +35,10 @@ class IngredientViewSet(ModelViewSet):
     queryset = Ingredient.objects.all()
     filter_backends = (DjangoFilterBackend, filters.SearchFilter)
     search_fields = ('^name',)
+
+
+class RecipeViewSet(ModelViewSet):
+    serializer_class = RecipeSerializer
+    queryset = Recipe.objects.all()
+
+

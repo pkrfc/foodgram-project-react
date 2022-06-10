@@ -31,21 +31,32 @@ class Ingredient(models.Model):
 
 class Recipe(models.Model):
     author = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name='Автор', related_name='recipes')
-    tags = models.ManyToManyField(Tag, verbose_name='Тэги', related_name='recipes')
+    tags = models.ManyToManyField(Tag, verbose_name='Тэги')
     ingredients = models.ManyToManyField(Ingredient, verbose_name='Ингридиенты', related_name='recipes')
     name = models.CharField(max_length=200, verbose_name='Название рецепта')
-    image = models.ImageField(verbose_name='Изображение рецепта')
+    image = models.ImageField(upload_to='recipes/image/', verbose_name='Изображение рецепта')
     text = models.TextField(verbose_name='Текст рецепта')
     cooking_time = models.PositiveSmallIntegerField(verbose_name='Время приготавления', validators=[MinValueValidator(1)])
-    pub_date = models.DateTimeField(auto_now_add=True, verbose_name='Дата публикации')
 
     class Meta:
-        ordering = ['-pub_date']
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
 
     def __str__(self):
         return self.name
+
+
+class RecipeIngredients(models.Model):
+    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE)
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+    amount = models.PositiveSmallIntegerField(verbose_name='Количество ингридиентов', validators=[MinValueValidator(1)])
+
+    class Meta:
+        verbose_name = 'Ингридиенты в рецепте'
+        verbose_name_plural = 'Ингридиенты в рецепте'
+
+    def __str__(self):
+        return {self.ingredient}, {self.recipe}
 
 
 class Purchase(models.Model):
@@ -64,30 +75,6 @@ class Purchase(models.Model):
     def __str__(self):
         return f'В корзине {self.user} есть {self.recipe}'
 
-
-class RecipeIngredients(models.Model):
-    ingredient = models.ForeignKey(Ingredient, on_delete=models.CASCADE, related_name='recipe_ingredients',)
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name='recipe_ingredients')
-    amount = models.PositiveSmallIntegerField(verbose_name='Количество ингридиентов', validators=[MinValueValidator(1)])
-
-    class Meta:
-        verbose_name = 'Ингридиенты в рецепте'
-        verbose_name_plural = 'Ингридиенты в рецепте'
-
-    def __str__(self):
-        return {self.ingredient}, {self.recipe}
-
-
-class RecipeTags(models.Model):
-    tag = models.ForeignKey(Tag, on_delete=models.CASCADE, related_name='recipe_tags')
-    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE, related_name='recipe_tags')
-
-    class Meta:
-        verbose_name = 'Тэги в рецепте'
-        verbose_name_plural = 'Тэги в рецепте'
-
-    def __str__(self):
-        return {self.tag}, {self.recipe}
 
 
 class Favorite(models.Model):

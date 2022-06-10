@@ -21,3 +21,4 @@ class Command(BaseCommand):
 
 app = Command()
 app.handle()
+print('Загрузка оконченна')
