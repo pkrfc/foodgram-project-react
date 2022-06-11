@@ -30,9 +30,9 @@ class Ingredient(models.Model):
 
 
 class Recipe(models.Model):
-    author = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name='Автор', related_name='recipes')
+    author = models.ForeignKey(CustomUser, on_delete=models.CASCADE, verbose_name='Автор', related_name='recipes',)
     tags = models.ManyToManyField(Tag, verbose_name='Тэги')
-    ingredients = models.ManyToManyField(Ingredient, verbose_name='Ингридиенты', related_name='recipes')
+    ingredients = models.ManyToManyField(Ingredient, verbose_name='Ингридиенты', related_name='recipes', through='RecipeIngredients')
     name = models.CharField(max_length=200, verbose_name='Название рецепта')
     image = models.ImageField(upload_to='recipes/image/', verbose_name='Изображение рецепта')
     text = models.TextField(verbose_name='Текст рецепта')
@@ -74,7 +74,6 @@ class Purchase(models.Model):
 
     def __str__(self):
         return f'В корзине {self.user} есть {self.recipe}'
-
 
 
 class Favorite(models.Model):

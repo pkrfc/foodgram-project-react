@@ -4,7 +4,6 @@ from users.models import CustomUser, Subscribe
 from rest_framework.relations import SlugRelatedField
 from recipes.models import Ingredient, Tag, Recipe, RecipeIngredients, Favorite
 from drf_extra_fields.fields import Base64ImageField
-from django.shortcuts import get_object_or_404
 
 
 class SingUpSerializer(UserCreateSerializer):
@@ -46,11 +45,10 @@ class TagSerializer(serializers.ModelSerializer):
 class IngredientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ingredient
-        fields = ('id', 'name', 'measurement_unit')
+        fields = '__all__'
 
 
 class RecipeIngredientsSerializer(serializers.ModelSerializer):
-    id = serializers.ReadOnlyField(source='ingredient.id')
     name = serializers.ReadOnlyField(source='ingredient.name')
     measurement_unit = serializers.ReadOnlyField(source='ingredient.measurement_unit')
 
@@ -60,15 +58,14 @@ class RecipeIngredientsSerializer(serializers.ModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
-    author = CustomUserSerializer(read_only=True)
-    ingredients = RecipeIngredientsSerializer(many=True, read_only=True)
     tags = TagSerializer(many=True, read_only=True)
+    author = CustomUserSerializer(read_only=True)
+    ingredients = RecipeIngredientsSerializer(many=True, read_only=True, source='ingredients.amount_set',)
     image = Base64ImageField()
-    cooking_time = serializers.IntegerField()
 
     class Meta:
         model = Recipe
-        fields = ('id', 'name', 'author', 'ingredients', 'tags', 'image', 'text', 'cooking_time')
+        fields = ('id', 'tags', 'author', 'ingredients', 'name', 'image', 'text', 'cooking_time')
 
     def create(self, validated_data):
         request = self.context.get('request')
@@ -84,3 +81,13 @@ class RecipeSerializer(serializers.ModelSerializer):
                 amount=ingredient.get('amount'),
             )
         return recipe
+
+
+class RecipeReadSerializer(RecipeSerializer):
+    tags = TagSerializer(read_only=True, many=True)
+    author = CustomUserSerializer(read_only=True)
+    ingredients = serializers.SerializerMethodField()
+
+    def get_ingredients(self, obj):
+        ingredients = RecipeIngredients.objects.filter(recipe=obj)
+        return RecipeIngredientsSerializer(ingredients, many=True).data
