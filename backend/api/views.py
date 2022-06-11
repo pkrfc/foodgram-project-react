@@ -5,7 +5,8 @@ from users.models import CustomUser, Subscribe
 from recipes.models import Tag, Ingredient, Recipe, RecipeIngredients, Favorite, Purchase
 from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
-
+from .permissions import IsAuthorOrReadOnly
+from rest_framework.decorators import action
 
 class CustomUserViewSet(UserViewSet):
     serializer_class = CustomUserSerializer
@@ -45,4 +46,8 @@ class RecipeViewSet(ModelViewSet):
             return RecipeReadSerializer
         return RecipeSerializer
 
+#    @action(detail=True, methods=['DELETE'],
+#           permission_classes=[IsAuthorOrReadOnly])
+#   def __delete__(self, instance):
+#       instance.delete()
 
