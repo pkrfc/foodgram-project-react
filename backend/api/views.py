@@ -39,6 +39,7 @@ class IngredientViewSet(ModelViewSet):
 
 class RecipeViewSet(ModelViewSet):
     queryset = Recipe.objects.all()
+
     def get_serializer_class(self):
         if self.request.method in ['GET']:
             return RecipeReadSerializer
