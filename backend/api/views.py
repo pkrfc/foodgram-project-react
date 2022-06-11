@@ -7,6 +7,10 @@ from rest_framework import filters
 from django_filters.rest_framework import DjangoFilterBackend
 from .permissions import IsAuthorOrReadOnly
 from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework import status
+
+
 
 class CustomUserViewSet(UserViewSet):
     serializer_class = CustomUserSerializer
@@ -40,14 +44,11 @@ class IngredientViewSet(ModelViewSet):
 
 class RecipeViewSet(ModelViewSet):
     queryset = Recipe.objects.all()
+    permission_classes = (IsAuthorOrReadOnly,)
 
     def get_serializer_class(self):
         if self.request.method in ['GET']:
             return RecipeReadSerializer
         return RecipeSerializer
 
-#    @action(detail=True, methods=['DELETE'],
-#           permission_classes=[IsAuthorOrReadOnly])
-#   def __delete__(self, instance):
-#       instance.delete()
 
