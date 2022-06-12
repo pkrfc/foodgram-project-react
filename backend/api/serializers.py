@@ -2,8 +2,9 @@ from rest_framework import serializers
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from users.models import CustomUser, Subscribe
 from rest_framework.relations import SlugRelatedField
-from recipes.models import Ingredient, Tag, Recipe, RecipeIngredients, Favorite
+from recipes.models import Ingredient, Tag, Recipe, RecipeIngredients, Favorite, Purchase
 from drf_extra_fields.fields import Base64ImageField
+from rest_framework.validators import UniqueTogetherValidator
 
 
 class SingUpSerializer(UserCreateSerializer):
@@ -110,3 +111,41 @@ class RecipeReadSerializer(RecipeSerializer):
     def get_ingredients(self, obj):
         ingredients = RecipeIngredients.objects.filter(recipe=obj)
         return RecipeIngredientsSerializer(ingredients, many=True).data
+
+
+class PurchaseSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
+    recipe = serializers.PrimaryKeyRelatedField(queryset=Recipe.objects.all())
+
+    class Meta:
+        model = Purchase
+        fields = '__all__'
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Purchase.objects.all(),
+                fields=('user', 'recipe'),
+                message='Этот рецепт уже в корзине'
+            )
+        ]
+
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
+    recipe = serializers.PrimaryKeyRelatedField(queryset=Recipe.objects.all())
+
+    class Meta:
+        model = Favorite
+        fields = '__all__'
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Favorite.objects.all(),
+                fields=('user', 'recipe'),
+                message='Этот рецепт уже в избранном'
+            )
+        ]
+
+
+class RecipeInfoSerializer(RecipeSerializer):
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')
