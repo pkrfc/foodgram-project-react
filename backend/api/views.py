@@ -14,27 +14,30 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.generics import get_object_or_404
 
+
 class CustomUserViewSet(UserViewSet):
     serializer_class = CustomUserSerializer
     queryset = CustomUser.objects.all()
+
+    @action(detail=True, methods=['POST', 'DELETE'], permission_classes=[IsAuthorOrReadOnly])
+    def subscribe(self, request, id):
+        user = request.user
+        following = get_object_or_404(CustomUser, id=id)
+        data = {'user': user.id, 'following': following.id}
+        if request.method == 'POST':
+            serializer = SubscribeSerializer(data=data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            serializer = CustomUserSerializer(following)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        following = get_object_or_404(Subscribe, user=user.id, following=following.id)
+        following.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class TagViewSet(ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
-
-
-class SubscribeViewSet(ModelViewSet):
-    serializer_class = SubscribeSerializer
-
-    def get_queryset(self):
-        return Subscribe.objects.filter(user=self.request.user)
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-
-    def perform_destroy(self, instance):
-        instance.delete()
 
 
 class IngredientViewSet(ModelViewSet):
@@ -90,3 +93,16 @@ class RecipeViewSet(ModelViewSet):
         favorite = get_object_or_404(Favorite, user=user, recipe=recipe)
         favorite.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class SubscribeViewSet(ModelViewSet):
+    serializer_class = SubscribeSerializer
+
+    def get_queryset(self):
+        return Subscribe.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    def perform_destroy(self, instance):
+        instance.delete()

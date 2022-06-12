@@ -22,15 +22,8 @@ class CustomUserSerializer(UserSerializer):
 
 
 class SubscribeSerializer(serializers.ModelSerializer):
-    user = SlugRelatedField(
-        slug_field='username',
-        read_only=True,
-        default=serializers.CurrentUserDefault()
-    )
-    following = serializers.SlugRelatedField(
-        slug_field='username',
-        queryset=CustomUser.objects.all()
-    )
+    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
+    following = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
 
     class Meta:
         model = Subscribe
