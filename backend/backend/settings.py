@@ -102,9 +102,11 @@ DJOSER = {
 
     'SERIALIZERS': {
         'user_create': 'api.serializers.SingUpSerializer',
-        'user': 'api.serializers.SingUpSerializer',
-        'current_user': 'api.serializers.SingUpSerializer',
-    }
+        'user': 'api.serializers.CustomUserSerializer',
+        'current_user': 'api.serializers.CustomUserSerializer',
+    },
+
+    'HIDE_USERS': False,
 }
 
 LANGUAGE_CODE = 'en-us'

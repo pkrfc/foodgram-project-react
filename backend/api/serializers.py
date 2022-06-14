@@ -21,6 +21,18 @@ class CustomUserSerializer(UserSerializer):
                   'last_name')
 
 
+class SubscriptionsSerializer(CustomUserSerializer):
+    is_subscribed = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CustomUser
+        fields = ('id', 'username', 'email', 'first_name',
+                  'last_name', 'is_subscribed')
+
+    def get_is_subscribed(self, value):
+        pass
+
+
 class SubscribeSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
     following = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())

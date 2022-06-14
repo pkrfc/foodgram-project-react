@@ -1,7 +1,7 @@
 from djoser.views import UserViewSet
 from .serializers import SingUpSerializer, TagSerializer, SubscribeSerializer, IngredientSerializer, \
     RecipeIngredientsSerializer, RecipeSerializer, CustomUserSerializer, RecipeReadSerializer, PurchaseSerializer, \
-    RecipeInfoSerializer, FavoriteSerializer
+    RecipeInfoSerializer, FavoriteSerializer, SubscriptionsSerializer
 from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
 from users.models import CustomUser, Subscribe
 from recipes.models import Tag, Ingredient, Recipe, RecipeIngredients, Favorite, Purchase
@@ -13,6 +13,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.generics import get_object_or_404
+from rest_framework.pagination import PageNumberPagination
 
 
 class CustomUserViewSet(UserViewSet):
@@ -33,6 +34,12 @@ class CustomUserViewSet(UserViewSet):
         following = get_object_or_404(Subscribe, user=user.id, following=following.id)
         following.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=['GET'], permission_classes=[IsAuthorOrReadOnly], url_name='subscriptions', url_path='subscriptions')
+    def subscriptions(self, request):
+        page = CustomUser.objects.filter(following__user=request.user)
+        serializer = SubscriptionsSerializer(page, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class TagViewSet(ModelViewSet):
