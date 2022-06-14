@@ -20,6 +20,7 @@ class CustomUserViewSet(UserViewSet):
     serializer_class = CustomUserSerializer
     queryset = CustomUser.objects.all()
 
+
     @action(detail=True, methods=['POST', 'DELETE'], permission_classes=[IsAuthorOrReadOnly])
     def subscribe(self, request, id):
         user = request.user
@@ -56,7 +57,13 @@ class IngredientViewSet(ModelViewSet):
 
 class RecipeViewSet(ModelViewSet):
     queryset = Recipe.objects.all()
-    permission_classes = (IsAuthorOrReadOnly,)
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            self.permission_classes = (AllowAny,)
+        else:
+            self.permission_classes = (IsAuthorOrReadOnly,)
+        return super(self.__class__, self).get_permissions()
 
     def get_serializer_class(self):
         if self.request.method in ['GET']:

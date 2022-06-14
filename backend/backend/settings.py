@@ -95,9 +95,10 @@ REST_FRAMEWORK = {
 }
 
 DJOSER = {
+
     'PERMISSIONS': {
-        'user_list': ['rest_framework.permissions.AllowAny'],
         'user': ['rest_framework.permissions.IsAuthenticated'],
+        'user_list': ['rest_framework.permissions.IsAuthenticated'],
     },
 
     'SERIALIZERS': {

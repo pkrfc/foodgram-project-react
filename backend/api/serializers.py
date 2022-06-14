@@ -15,13 +15,6 @@ class SingUpSerializer(UserCreateSerializer):
 
 
 class CustomUserSerializer(UserSerializer):
-    class Meta:
-        model = CustomUser
-        fields = ('id', 'username', 'email', 'first_name',
-                  'last_name')
-
-
-class SubscriptionsSerializer(CustomUserSerializer):
     is_subscribed = serializers.SerializerMethodField()
 
     class Meta:
@@ -29,8 +22,28 @@ class SubscriptionsSerializer(CustomUserSerializer):
         fields = ('id', 'username', 'email', 'first_name',
                   'last_name', 'is_subscribed')
 
-    def get_is_subscribed(self, value):
-        pass
+    def get_is_subscribed(self, obj):
+        user = self.context.get('request').user
+        if user is None or user.is_anonymous:
+            return False
+        return Subscribe.objects.filter(following=obj.id, user=user).exists()
+
+
+class SubscriptionsSerializer(CustomUserSerializer):
+    recipes = serializers.SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CustomUser
+        fields = ('email', 'id', 'username', 'first_name',
+                  'last_name', 'recipes', 'recipes_count'
+                  )
+
+    def get_recipes(self, obj):
+        return RecipeInfoSerializer(obj.recipes.all(), many=True).data
+
+    def get_recipes_count(self, obj):
+        return Recipe.objects.filter(author=obj).count()
 
 
 class SubscribeSerializer(serializers.ModelSerializer):
