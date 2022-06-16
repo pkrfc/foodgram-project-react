@@ -29,7 +29,7 @@ class CustomUserViewSet(UserViewSet):
             serializer = SubscribeSerializer(data=data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            serializer = CustomUserSerializer(following)
+            serializer = CustomUserSerializer(following, context={'request': request})
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         following = get_object_or_404(Subscribe, user=user.id, following=following.id)
         following.delete()
@@ -38,7 +38,7 @@ class CustomUserViewSet(UserViewSet):
     @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated], url_name='subscriptions', url_path='subscriptions')
     def subscriptions(self, request):
         page = CustomUser.objects.filter(following__user=request.user)
-        serializer = SubscriptionsSerializer(page, many=True)
+        serializer = SubscriptionsSerializer(page, many=True, context={'request': request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -100,3 +100,9 @@ class RecipeViewSet(ModelViewSet):
         favorite = get_object_or_404(Favorite, user=user, recipe=recipe)
         favorite.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=['GET'], permission_classes=(IsAuthenticated,))
+    def download_shopping_cart(self, request, pk=None):
+        user = request.user
+        recipes = Recipe.objects.filter(is_in_shopping_cart=True)
+        pass
