@@ -20,8 +20,7 @@ class CustomUserViewSet(UserViewSet):
     serializer_class = CustomUserSerializer
     queryset = CustomUser.objects.all()
 
-
-    @action(detail=True, methods=['POST', 'DELETE'], permission_classes=[IsAuthorOrReadOnly])
+    @action(detail=True, methods=['POST', 'DELETE'], permission_classes=[IsAuthenticated])
     def subscribe(self, request, id):
         user = request.user
         following = get_object_or_404(CustomUser, id=id)
@@ -36,7 +35,7 @@ class CustomUserViewSet(UserViewSet):
         following.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=False, methods=['GET'], permission_classes=[IsAuthorOrReadOnly], url_name='subscriptions', url_path='subscriptions')
+    @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated], url_name='subscriptions', url_path='subscriptions')
     def subscriptions(self, request):
         page = CustomUser.objects.filter(following__user=request.user)
         serializer = SubscriptionsSerializer(page, many=True)
@@ -57,20 +56,14 @@ class IngredientViewSet(ModelViewSet):
 
 class RecipeViewSet(ModelViewSet):
     queryset = Recipe.objects.all()
-
-    def get_permissions(self):
-        if self.request.method == 'GET':
-            self.permission_classes = (AllowAny,)
-        else:
-            self.permission_classes = (IsAuthorOrReadOnly,)
-        return super(self.__class__, self).get_permissions()
+    permission_classes = (IsAuthorOrReadOnly,)
 
     def get_serializer_class(self):
         if self.request.method in ['GET']:
             return RecipeReadSerializer
         return RecipeSerializer
 
-    @action(detail=True, methods=['POST'], permission_classes=[IsAuthenticated])
+    @action(detail=True, methods=['POST'], permission_classes=(IsAuthenticated,))
     def shopping_cart(self, request, pk=None):
         user = request.user
         recipe = self.get_object()
@@ -89,7 +82,7 @@ class RecipeViewSet(ModelViewSet):
         cart.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=True, methods=['POST'], permission_classes=[IsAuthenticated])
+    @action(detail=True, methods=['POST'], permission_classes=(IsAuthenticated,))
     def favorite(self, request, pk=None):
         user = request.user
         recipe = self.get_object()
@@ -107,16 +100,3 @@ class RecipeViewSet(ModelViewSet):
         favorite = get_object_or_404(Favorite, user=user, recipe=recipe)
         favorite.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
-
-
-class SubscribeViewSet(ModelViewSet):
-    serializer_class = SubscribeSerializer
-
-    def get_queryset(self):
-        return Subscribe.objects.filter(user=self.request.user)
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-
-    def perform_destroy(self, instance):
-        instance.delete()

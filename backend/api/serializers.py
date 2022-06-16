@@ -23,10 +23,10 @@ class CustomUserSerializer(UserSerializer):
                   'last_name', 'is_subscribed')
 
     def get_is_subscribed(self, obj):
-        user = self.context.get('request').user
-        if user is None or user.is_anonymous:
+        request = self.context.get('request')
+        if request is None or request.user.is_anonymous:
             return False
-        return Subscribe.objects.filter(following=obj.id, user=user).exists()
+        return Subscribe.objects.filter(following=obj.id, user=request.user).exists()
 
 
 class SubscriptionsSerializer(CustomUserSerializer):
@@ -36,7 +36,7 @@ class SubscriptionsSerializer(CustomUserSerializer):
     class Meta:
         model = CustomUser
         fields = ('email', 'id', 'username', 'first_name',
-                  'last_name', 'recipes', 'recipes_count'
+                  'last_name', 'is_subscribed', 'recipes', 'recipes_count'
                   )
 
     def get_recipes(self, obj):
@@ -53,6 +53,20 @@ class SubscribeSerializer(serializers.ModelSerializer):
     class Meta:
         model = Subscribe
         fields = '__all__'
+
+        validators = [
+            UniqueTogetherValidator(
+                queryset=Subscribe.objects.all(),
+                fields=('user', 'following'),
+                message='Вы уже подписаны на этого пользователя'
+            )
+        ]
+
+    def get_is_subscribed(self, obj):
+        request = self.context.get('request')
+        if request is None or request.user.is_anonymous:
+            return False
+        return Subscribe.objects.filter(following=obj.id, user=request.user).exists()
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -81,10 +95,24 @@ class RecipeSerializer(serializers.ModelSerializer):
     author = CustomUserSerializer(read_only=True)
     ingredients = RecipeIngredientsSerializer(many=True, read_only=True, source='ingredients.amount_set',)
     image = Base64ImageField()
+    is_favorited = serializers.SerializerMethodField()
+    is_in_shopping_cart = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
-        fields = ('id', 'tags', 'author', 'ingredients', 'name', 'image', 'text', 'cooking_time')
+        fields = ('id', 'tags', 'author', 'ingredients', 'is_favorited', 'is_in_shopping_cart', 'name', 'image', 'text', 'cooking_time')
+
+    def get_is_favorited(self, obj):
+        user = self.context.get('request').user
+        if user is None or user.is_anonymous:
+            return False
+        return Favorite.objects.filter(recipe=obj, user=user).exists()
+
+    def get_is_in_shopping_cart(self, obj):
+        user = self.context.get('request').user
+        if user is None or user.is_anonymous:
+            return False
+        return Purchase.objects.filter(recipe=obj, user=user).exists()
 
     def create(self, validated_data):
         request = self.context.get('request')
