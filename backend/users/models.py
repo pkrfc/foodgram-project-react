@@ -9,6 +9,10 @@ class CustomUser(AbstractUser):
 
     email = models.EmailField(max_length=254, unique=True, db_index=True)
 
+    class Meta:
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
+
     def __str__(self):
         return self.username
 
@@ -26,6 +30,9 @@ class Subscribe(models.Model):
     )
 
     class Meta:
+        verbose_name = 'Подписчик'
+        verbose_name_plural = 'Подписчики'
+
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'following'], name='Unique_follow'),
