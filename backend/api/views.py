@@ -14,6 +14,8 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.generics import get_object_or_404
 from rest_framework.pagination import PageNumberPagination
+from .filters import RecipeFilter
+from django.http.response import HttpResponse
 
 
 class CustomUserViewSet(UserViewSet):
@@ -57,6 +59,8 @@ class IngredientViewSet(ModelViewSet):
 class RecipeViewSet(ModelViewSet):
     queryset = Recipe.objects.all()
     permission_classes = (IsAuthorOrReadOnly,)
+    filter_backends = (DjangoFilterBackend,)
+    filter_class = RecipeFilter
 
     def get_serializer_class(self):
         if self.request.method in ['GET']:
@@ -103,6 +107,25 @@ class RecipeViewSet(ModelViewSet):
 
     @action(detail=False, methods=['GET'], permission_classes=(IsAuthenticated,))
     def download_shopping_cart(self, request, pk=None):
-        user = request.user
-        recipes = Recipe.objects.filter(is_in_shopping_cart=True)
-        pass
+        file = {}
+        ingredients = RecipeIngredients.objects.filter(
+            recipe__purchase__user=request.user
+        )
+        for ingredient in ingredients:
+            name = ingredient.ingredient.name
+            measurement_unit = ingredient.ingredient.measurement_unit
+            amount = ingredient.amount
+            if name not in file:
+                file[name] = {
+                    'measurement_unit': measurement_unit,
+                    'amount': amount
+                }
+            else:
+                file[name]['amount'] += amount
+        ingredient_list = []
+        for item, value in file.items():
+            ingredient_list.append(f"{item}: {value['amount']} {value['measurement_unit']} \n")
+        ingredient_list.append('\nСпасибо, что воспользовались нашим сервисом!')
+        response = HttpResponse(ingredient_list, 'Content-Type: text/plain')
+        response['Content-Disposition'] = 'attachment; filename="ingredient_list.txt"'
+        return response
