@@ -1,10 +1,11 @@
-from rest_framework import serializers
 from djoser.serializers import UserCreateSerializer, UserSerializer
-from users.models import CustomUser, Subscribe
-from rest_framework.relations import SlugRelatedField
-from recipes.models import Ingredient, Tag, Recipe, RecipeIngredients, Favorite, Purchase
 from drf_extra_fields.fields import Base64ImageField
+from rest_framework import serializers
 from rest_framework.validators import UniqueTogetherValidator
+
+from recipes.models import (Favorite, Ingredient, Purchase, Recipe,
+                            RecipeIngredients, Tag)
+from users.models import CustomUser, Subscribe
 
 
 class SingUpSerializer(UserCreateSerializer):
@@ -26,7 +27,10 @@ class CustomUserSerializer(UserSerializer):
         request = self.context.get('request')
         if request is None or request.user.is_anonymous:
             return False
-        return Subscribe.objects.filter(following=obj.id, user=request.user).exists()
+        return Subscribe.objects.filter(
+            following=obj.id,
+            user=request.user
+        ).exists()
 
 
 class SubscriptionsSerializer(CustomUserSerializer):
@@ -47,8 +51,12 @@ class SubscriptionsSerializer(CustomUserSerializer):
 
 
 class SubscribeSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
-    following = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
+    user = serializers.PrimaryKeyRelatedField(
+        queryset=CustomUser.objects.all()
+    )
+    following = serializers.PrimaryKeyRelatedField(
+        queryset=CustomUser.objects.all()
+    )
 
     class Meta:
         model = Subscribe
@@ -66,7 +74,9 @@ class SubscribeSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if request is None or request.user.is_anonymous:
             return False
-        return Subscribe.objects.filter(following=obj.id, user=request.user).exists()
+        return Subscribe.objects.filter(
+            following=obj.id, user=request.user
+        ).exists()
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -82,8 +92,12 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class RecipeIngredientsSerializer(serializers.ModelSerializer):
-    name = serializers.ReadOnlyField(source='ingredient.name')
-    measurement_unit = serializers.ReadOnlyField(source='ingredient.measurement_unit')
+    name = serializers.ReadOnlyField(
+        source='ingredient.name'
+    )
+    measurement_unit = serializers.ReadOnlyField(
+        source='ingredient.measurement_unit'
+    )
 
     class Meta:
         model = RecipeIngredients
@@ -93,14 +107,28 @@ class RecipeIngredientsSerializer(serializers.ModelSerializer):
 class RecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     author = CustomUserSerializer(read_only=True)
-    ingredients = RecipeIngredientsSerializer(many=True, read_only=True, source='ingredients.amount_set',)
+    ingredients = RecipeIngredientsSerializer(
+        many=True, read_only=True,
+        source='ingredients.amount_set',
+    )
     image = Base64ImageField()
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
-        fields = ('id', 'tags', 'author', 'ingredients', 'is_favorited', 'is_in_shopping_cart', 'name', 'image', 'text', 'cooking_time')
+        fields = (
+            'id',
+            'tags',
+            'author',
+            'ingredients',
+            'is_favorited',
+            'is_in_shopping_cart',
+            'name',
+            'image',
+            'text',
+            'cooking_time'
+        )
 
     def get_is_favorited(self, obj):
         user = self.context.get('request').user
@@ -118,7 +146,11 @@ class RecipeSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         image = validated_data.pop('image')
         ingredients_data = self.initial_data.get('ingredients')
-        recipe = Recipe.objects.create(author=request.user, image=image, **validated_data)
+        recipe = Recipe.objects.create(
+            author=request.user,
+            image=image,
+            **validated_data
+        )
         tags_data = self.initial_data.get('tags')
         recipe.tags.set(tags_data)
         for ingredient in ingredients_data:
@@ -133,7 +165,9 @@ class RecipeSerializer(serializers.ModelSerializer):
         instance.image = validated_data.get('image', instance.image)
         instance.name = validated_data.get('name', instance.name)
         instance.text = validated_data.get('text', instance.text)
-        instance.cooking_time = validated_data.get('cooking_time', instance.cooking_time)
+        instance.cooking_time = validated_data.get(
+            'cooking_time', instance.cooking_time
+        )
         instance.tags.clear()
         tags_data = self.initial_data.get('tags')
         instance.tags.set(tags_data)
@@ -160,8 +194,12 @@ class RecipeReadSerializer(RecipeSerializer):
 
 
 class PurchaseSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
-    recipe = serializers.PrimaryKeyRelatedField(queryset=Recipe.objects.all())
+    user = serializers.PrimaryKeyRelatedField(
+        queryset=CustomUser.objects.all()
+    )
+    recipe = serializers.PrimaryKeyRelatedField(
+        queryset=Recipe.objects.all()
+    )
 
     class Meta:
         model = Purchase
@@ -176,8 +214,12 @@ class PurchaseSerializer(serializers.ModelSerializer):
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
-    user = serializers.PrimaryKeyRelatedField(queryset=CustomUser.objects.all())
-    recipe = serializers.PrimaryKeyRelatedField(queryset=Recipe.objects.all())
+    user = serializers.PrimaryKeyRelatedField(
+        queryset=CustomUser.objects.all()
+    )
+    recipe = serializers.PrimaryKeyRelatedField(
+        queryset=Recipe.objects.all()
+    )
 
     class Meta:
         model = Favorite

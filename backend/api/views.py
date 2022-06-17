@@ -1,28 +1,35 @@
-from djoser.views import UserViewSet
-from .serializers import SingUpSerializer, TagSerializer, SubscribeSerializer, IngredientSerializer, \
-    RecipeIngredientsSerializer, RecipeSerializer, CustomUserSerializer, RecipeReadSerializer, PurchaseSerializer, \
-    RecipeInfoSerializer, FavoriteSerializer, SubscriptionsSerializer
-from rest_framework.viewsets import ReadOnlyModelViewSet, ModelViewSet
-from users.models import CustomUser, Subscribe
-from recipes.models import Tag, Ingredient, Recipe, RecipeIngredients, Favorite, Purchase
-from rest_framework import filters
-from django_filters.rest_framework import DjangoFilterBackend
-from .permissions import IsAuthorOrReadOnly
-from rest_framework.decorators import action
-from rest_framework.response import Response
-from rest_framework import status
-from rest_framework.permissions import AllowAny, IsAuthenticated
-from rest_framework.generics import get_object_or_404
-from rest_framework.pagination import PageNumberPagination
-from .filters import RecipeFilter
 from django.http.response import HttpResponse
+from django_filters.rest_framework import DjangoFilterBackend
+from djoser.views import UserViewSet
+from rest_framework import filters, status
+from rest_framework.decorators import action
+from rest_framework.generics import get_object_or_404
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.viewsets import ModelViewSet
+
+from recipes.models import (Favorite, Ingredient, Purchase, Recipe,
+                            RecipeIngredients, Tag)
+from users.models import CustomUser, Subscribe
+
+from .filters import RecipeFilter
+from .permissions import IsAuthorOrReadOnly
+from .serializers import (CustomUserSerializer, FavoriteSerializer,
+                          IngredientSerializer, PurchaseSerializer,
+                          RecipeInfoSerializer, RecipeReadSerializer,
+                          RecipeSerializer, SubscribeSerializer,
+                          SubscriptionsSerializer, TagSerializer)
 
 
 class CustomUserViewSet(UserViewSet):
     serializer_class = CustomUserSerializer
     queryset = CustomUser.objects.all()
 
-    @action(detail=True, methods=['POST', 'DELETE'], permission_classes=[IsAuthenticated])
+    @action(
+        detail=True,
+        methods=['POST', 'DELETE'],
+        permission_classes=[IsAuthenticated]
+    )
     def subscribe(self, request, id):
         user = request.user
         following = get_object_or_404(CustomUser, id=id)
@@ -31,16 +38,32 @@ class CustomUserViewSet(UserViewSet):
             serializer = SubscribeSerializer(data=data)
             serializer.is_valid(raise_exception=True)
             serializer.save()
-            serializer = CustomUserSerializer(following, context={'request': request})
+            serializer = CustomUserSerializer(
+                following,
+                context={'request': request}
+            )
             return Response(serializer.data, status=status.HTTP_201_CREATED)
-        following = get_object_or_404(Subscribe, user=user.id, following=following.id)
+        following = get_object_or_404(
+            Subscribe,
+            user=user.id,
+            following=following.id
+        )
         following.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=False, methods=['GET'], permission_classes=[IsAuthenticated], url_name='subscriptions', url_path='subscriptions')
+    @action(
+        detail=False,
+        methods=['GET'],
+        permission_classes=[IsAuthenticated],
+        url_name='subscriptions',
+        url_path='subscriptions'
+    )
     def subscriptions(self, request):
         page = CustomUser.objects.filter(following__user=request.user)
-        serializer = SubscriptionsSerializer(page, many=True, context={'request': request})
+        serializer = SubscriptionsSerializer(
+            page, many=True,
+            context={'request': request}
+        )
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
@@ -67,7 +90,11 @@ class RecipeViewSet(ModelViewSet):
             return RecipeReadSerializer
         return RecipeSerializer
 
-    @action(detail=True, methods=['POST'], permission_classes=(IsAuthenticated,))
+    @action(
+        detail=True,
+        methods=['POST'],
+        permission_classes=(IsAuthenticated,)
+    )
     def shopping_cart(self, request, pk=None):
         user = request.user
         recipe = self.get_object()
@@ -86,7 +113,11 @@ class RecipeViewSet(ModelViewSet):
         cart.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=True, methods=['POST'], permission_classes=(IsAuthenticated,))
+    @action(
+        detail=True,
+        methods=['POST'],
+        permission_classes=(IsAuthenticated,)
+    )
     def favorite(self, request, pk=None):
         user = request.user
         recipe = self.get_object()
@@ -105,7 +136,11 @@ class RecipeViewSet(ModelViewSet):
         favorite.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=False, methods=['GET'], permission_classes=(IsAuthenticated,))
+    @action(
+        detail=False,
+        methods=['GET'],
+        permission_classes=(IsAuthenticated,)
+    )
     def download_shopping_cart(self, request, pk=None):
         file = {}
         ingredients = RecipeIngredients.objects.filter(
@@ -124,8 +159,9 @@ class RecipeViewSet(ModelViewSet):
                 file[name]['amount'] += amount
         ingredient_list = []
         for item, value in file.items():
-            ingredient_list.append(f"{item}: {value['amount']} {value['measurement_unit']} \n")
-        ingredient_list.append('\nСпасибо, что воспользовались нашим сервисом!')
+            line = f"{item}: {value['amount']} {value['measurement_unit']} \n"
+            ingredient_list.append(line)
+        ingredient_list.append('\nСпасибо, что Вы с нами!')
         response = HttpResponse(ingredient_list, 'Content-Type: text/plain')
         response['Content-Disposition'] = 'attachment; filename="ingredient_list.txt"'
         return response
