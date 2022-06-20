@@ -50,7 +50,7 @@ class Recipe(models.Model):
         Ingredient,
         verbose_name='Ингридиенты',
         related_name='recipes',
-        through='RecipeIngredients')
+        through='RecipeIngredient')
     name = models.CharField(
         max_length=200,
         verbose_name='Название рецепта'
@@ -75,7 +75,7 @@ class Recipe(models.Model):
         return self.name
 
 
-class RecipeIngredients(models.Model):
+class RecipeIngredient(models.Model):
     ingredient = models.ForeignKey(
         Ingredient,
         on_delete=models.CASCADE
@@ -92,6 +92,11 @@ class RecipeIngredients(models.Model):
     class Meta:
         verbose_name = 'Ингридиенты в рецепте'
         verbose_name_plural = 'Ингридиенты в рецепте'
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=['ingredient', 'recipe'], name='Unique_ingredient')
+            ]
 
     def __str__(self):
         return {self.ingredient}, {self.recipe}
@@ -137,6 +142,11 @@ class Favorite(models.Model):
     class Meta:
         verbose_name = 'Избранный рецепт'
         verbose_name_plural = 'Избранные рецепты'
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'recipe'], name='Unique_favorite')
+            ]
 
     def __str__(self):
         return {self.user}, {self.recipe}

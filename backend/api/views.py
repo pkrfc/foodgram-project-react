@@ -9,22 +9,23 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from recipes.models import (Favorite, Ingredient, Purchase, Recipe,
-                            RecipeIngredients, Tag)
+                            RecipeIngredient, Tag)
 from users.models import CustomUser, Subscribe
-
 from .filters import RecipeFilter
 from .permissions import IsAuthorOrReadOnly
-from .serializers import (CustomUserSerializer, FavoriteSerializer,
-                          IngredientSerializer, PurchaseSerializer,
+from .serializers import (CustomUserSerializer,
+                          IngredientSerializer,
                           RecipeInfoSerializer, RecipeReadSerializer,
                           RecipeSerializer, SubscribeSerializer,
                           SubscriptionsSerializer, TagSerializer)
+from django.db import transaction
 
 
 class CustomUserViewSet(UserViewSet):
     serializer_class = CustomUserSerializer
     queryset = CustomUser.objects.all()
 
+    @transaction.atomic
     @action(
         detail=True,
         methods=['POST', 'DELETE'],
@@ -96,22 +97,11 @@ class RecipeViewSet(ModelViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def shopping_cart(self, request, pk=None):
-        user = request.user
-        recipe = self.get_object()
-        data = {'user': user.id, 'recipe': recipe.id}
-        serializer = PurchaseSerializer(data=data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        serializer = RecipeInfoSerializer(recipe)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return self.add_obj(Purchase, request.user, pk)
 
     @shopping_cart.mapping.delete
     def delete_shopping_cart(self, request, pk=None):
-        user = request.user
-        recipe = self.get_object()
-        cart = get_object_or_404(Purchase, user=user, recipe=recipe)
-        cart.delete()
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        return self.delete_obj(Purchase, request.user, pk)
 
     @action(
         detail=True,
@@ -119,21 +109,23 @@ class RecipeViewSet(ModelViewSet):
         permission_classes=(IsAuthenticated,)
     )
     def favorite(self, request, pk=None):
-        user = request.user
-        recipe = self.get_object()
-        data = {'user': user.id, 'recipe': recipe.id}
-        serializer = FavoriteSerializer(data=data)
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
-        serializer = RecipeInfoSerializer(recipe)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return self.add_obj(Favorite, request.user, pk)
 
     @favorite.mapping.delete
     def delete_favorite(self, request, pk=None):
-        user = request.user
-        recipe = self.get_object()
-        favorite = get_object_or_404(Favorite, user=user, recipe=recipe)
-        favorite.delete()
+        return self.delete_obj(Favorite, request.user, pk)
+
+    @transaction.atomic
+    def add_obj(self, model, user, pk):
+        recipe = get_object_or_404(Recipe, id=pk)
+        model.objects.create(user=user, recipe=recipe)
+        serializer = RecipeInfoSerializer(recipe)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @transaction.atomic
+    def delete_obj(self, model, user, pk):
+        obj = model.objects.filter(user=user, recipe=pk)
+        obj.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
@@ -143,7 +135,7 @@ class RecipeViewSet(ModelViewSet):
     )
     def download_shopping_cart(self, request, pk=None):
         file = {}
-        ingredients = RecipeIngredients.objects.filter(
+        ingredients = RecipeIngredient.objects.filter(
             recipe__purchase__user=request.user
         )
         for ingredient in ingredients:
@@ -165,3 +157,5 @@ class RecipeViewSet(ModelViewSet):
         response = HttpResponse(ingredient_list, 'Content-Type: text/plain')
         response['Content-Disposition'] = 'attachment; filename="ingredient_list.txt"'
         return response
+
+

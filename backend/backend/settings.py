@@ -1,13 +1,31 @@
 from pathlib import Path
+import os
+from datetime import timedelta
+
+import environ
+from django.core.management.utils import get_random_secret_key
+
+env = environ.Env(
+    DEBUG=(bool, True),
+    SECRET_KEY=(str, '*'),
+    ALLOWED_HOSTS=(list, []),
+    DB_NAME=str,
+    POSTGRES_USER=str,
+    POSTGRES_PASSWORD=str,
+    DB_HOST=str,
+    DB_PORT=int,
+)
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-o=(gdn%$%h&90eefn_cd5*6t8adhhje9%y8&0*#qw&8i)iw&bl'
+environ.Env.read_env()
 
+SECRET_KEY = env('SECRET_KEY', default=get_random_secret_key())
+
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 
 DEBUG = True
 
-ALLOWED_HOSTS = []
 
 AUTH_USER_MODEL = 'users.CustomUser'
 
@@ -59,12 +77,25 @@ TEMPLATES = [
 WSGI_APPLICATION = 'backend.wsgi.application'
 
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+if DEBUG:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
+
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': env('DB_ENGINE', default='django.db.backends.postgresql'),
+            'NAME': env('DB_NAME', default='postgres'),
+            'USER': env('POSTGRES_USER', default='postgres'),
+            'PASSWORD': env('POSTGRES_PASSWORD', default='postgres'),
+            'HOST': env('DB_HOST', default='db'),
+            'PORT': env('DB_PORT', default='5432')
+        }
+    }
 
 
 AUTH_PASSWORD_VALIDATORS = [
