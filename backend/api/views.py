@@ -1,3 +1,5 @@
+from django.db import transaction
+from django.db.models import Sum
 from django.http.response import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
@@ -13,12 +15,10 @@ from recipes.models import (Favorite, Ingredient, Purchase, Recipe,
 from users.models import CustomUser, Subscribe
 from .filters import RecipeFilter
 from .permissions import IsAuthorOrReadOnly
-from .serializers import (CustomUserSerializer,
-                          IngredientSerializer,
+from .serializers import (CustomUserSerializer, IngredientSerializer,
                           RecipeInfoSerializer, RecipeReadSerializer,
                           RecipeSerializer, SubscribeSerializer,
                           SubscriptionsSerializer, TagSerializer)
-from django.db import transaction
 
 
 class CustomUserViewSet(UserViewSet):
@@ -133,29 +133,20 @@ class RecipeViewSet(ModelViewSet):
         methods=['GET'],
         permission_classes=(IsAuthenticated,)
     )
-    def download_shopping_cart(self, request, pk=None):
-        file = {}
+    def download_shopping_cart(self, request):
         ingredients = RecipeIngredient.objects.filter(
             recipe__purchase__user=request.user
+        ).values(
+            'ingredient__name', 'ingredient__measurement_unit'
+        ).annotate(
+            total=Sum('amount')
         )
-        for ingredient in ingredients:
-            name = ingredient.ingredient.name
-            measurement_unit = ingredient.ingredient.measurement_unit
-            amount = ingredient.amount
-            if name not in file:
-                file[name] = {
-                    'measurement_unit': measurement_unit,
-                    'amount': amount
-                }
-            else:
-                file[name]['amount'] += amount
         ingredient_list = []
-        for item, value in file.items():
-            line = f"{item}: {value['amount']} {value['measurement_unit']} \n"
+        for ingredient in ingredients:
+            line = f'{ingredient["ingredient__name"]}:{ingredient["total"]} \n'
+            f'{ingredient["ingredient__measurement_unit"]}'
             ingredient_list.append(line)
         ingredient_list.append('\nСпасибо, что Вы с нами!')
         response = HttpResponse(ingredient_list, 'Content-Type: text/plain')
         response['Content-Disposition'] = 'attachment; filename="ingredient_list.txt"'
         return response
-
-
