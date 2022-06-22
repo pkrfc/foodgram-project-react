@@ -110,13 +110,19 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'measurement_unit', 'amount')
 
 
+class IngredientForCreateSerializer(serializers.ModelSerializer):
+    id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
+    amount = serializers.IntegerField()
+
+    class Meta:
+        model = RecipeIngredient
+        fields = ("id", "amount")
+
+
 class RecipeSerializer(serializers.ModelSerializer):
-    tags = TagSerializer(many=True, read_only=True)
+    tags = serializers.PrimaryKeyRelatedField(many=True, queryset=Tag.objects.all())
     author = CustomUserSerializer(read_only=True)
-    ingredients = RecipeIngredientSerializer(
-        many=True, read_only=True,
-        source='ingredients_amount',
-    )
+    ingredients = IngredientForCreateSerializer(many=True, write_only=True)
     image = Base64ImageField()
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
@@ -163,12 +169,13 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         ingredients = self.initial_data.get('ingredients')
-        tags = self.initial_data.get('tags')
+        tags = data.get('tags')
+        data = data
         ingredients_list = []
         for ingredient in ingredients:
             if ingredient in ingredients_list:
                 raise serializers.ValidationError(
-                    'Ингридиенты не должны повторяться'
+                    'Ингредиенты не должны повторяться'
                 )
             ingredients_list.append(ingredient)
         data['ingredients'] = ingredients
