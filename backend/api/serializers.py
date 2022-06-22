@@ -111,12 +111,12 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 
 
 class IngredientForCreateSerializer(serializers.ModelSerializer):
-    id = serializers.PrimaryKeyRelatedField(queryset=Ingredient.objects.all())
+    id = serializers.IntegerField()
     amount = serializers.IntegerField()
 
     class Meta:
         model = RecipeIngredient
-        fields = ("id", "amount")
+        fields = ('id', 'amount')
 
 
 class RecipeSerializer(serializers.ModelSerializer):
@@ -168,9 +168,8 @@ class RecipeSerializer(serializers.ModelSerializer):
         RecipeIngredient.objects.bulk_create(ingredients_list)
 
     def validate(self, data):
-        ingredients = self.initial_data.get('ingredients')
+        ingredients = data.get('ingredients')
         tags = data.get('tags')
-        data = data
         ingredients_list = []
         for ingredient in ingredients:
             if ingredient in ingredients_list:
