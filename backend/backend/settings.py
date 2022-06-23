@@ -1,5 +1,5 @@
 from pathlib import Path
-
+import os
 import environ
 from django.core.management.utils import get_random_secret_key
 
@@ -14,7 +14,7 @@ env = environ.Env(
     DB_PORT=int,
 )
 
-BASE_DIR = Path(__file__).resolve().parent.parent
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 environ.Env.read_env()
 
@@ -22,7 +22,7 @@ SECRET_KEY = env('SECRET_KEY', default=get_random_secret_key())
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 
-DEBUG = True
+DEBUG = False
 
 
 AUTH_USER_MODEL = 'users.CustomUser'
@@ -56,6 +56,7 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'backend.urls'
 
+TEMPLATES_DIR = os.path.join(BASE_DIR, "templates")
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -152,5 +153,7 @@ USE_L10N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
+
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
