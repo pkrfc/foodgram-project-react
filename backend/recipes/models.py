@@ -95,7 +95,7 @@ class RecipeIngredient(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=['ingredient', 'recipe'], name='Unique_ingredient')
-            ]
+        ]
 
     def __str__(self):
         return f'{self.ingredient}, {self.recipe}'
@@ -120,7 +120,7 @@ class Purchase(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'recipe'], name='Unique_recipe')
-            ]
+        ]
 
     def __str__(self):
         return f'В корзине {self.user} есть {self.recipe}'
@@ -145,7 +145,7 @@ class Favorite(models.Model):
         constraints = [
             models.UniqueConstraint(
                 fields=['user', 'recipe'], name='Unique_favorite')
-            ]
+        ]
 
     def __str__(self):
         return f'{self.user}, {self.recipe}'
