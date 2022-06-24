@@ -3,16 +3,16 @@ from django.db.models import Sum
 from django.http.response import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
+from recipes.models import (Favorite, Ingredient, Purchase, Recipe,
+                            RecipeIngredient, Tag)
 from rest_framework import filters, status
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-
-from recipes.models import (Favorite, Ingredient, Purchase, Recipe,
-                            RecipeIngredient, Tag)
 from users.models import CustomUser, Subscribe
+
 from .filters import RecipeFilter
 from .permissions import IsAuthorOrReadOnly
 from .serializers import (CustomUserSerializer, IngredientSerializer,
@@ -148,5 +148,6 @@ class RecipeViewSet(ModelViewSet):
             ingredient_list.append(line)
         ingredient_list.append('\nСпасибо, что Вы с нами!')
         response = HttpResponse(ingredient_list, 'Content-Type: text/plain')
-        response['Content-Disposition'] = 'attachment; filename="ingredient_list.txt"'
+        file = 'attachment; filename="ingredient_list.txt"'
+        response['Content-Disposition'] = file
         return response

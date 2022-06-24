@@ -1,10 +1,9 @@
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_extra_fields.fields import Base64ImageField
-from rest_framework import serializers
-from rest_framework.validators import UniqueTogetherValidator
-
 from recipes.models import (Favorite, Ingredient, Purchase, Recipe,
                             RecipeIngredient, Tag)
+from rest_framework import serializers
+from rest_framework.validators import UniqueTogetherValidator
 from users.models import CustomUser, Subscribe
 
 
@@ -120,7 +119,9 @@ class IngredientForCreateSerializer(serializers.ModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
-    tags = serializers.PrimaryKeyRelatedField(many=True, queryset=Tag.objects.all())
+    tags = serializers.PrimaryKeyRelatedField(
+        many=True, queryset=Tag.objects.all()
+    )
     author = CustomUserSerializer(read_only=True)
     ingredients = IngredientForCreateSerializer(many=True, write_only=True)
     image = Base64ImageField()
