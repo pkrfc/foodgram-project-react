@@ -22,7 +22,7 @@ SECRET_KEY = env('SECRET_KEY', default=get_random_secret_key())
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 
-DEBUG = False
+DEBUG = True
 
 
 AUTH_USER_MODEL = 'users.CustomUser'
@@ -75,26 +75,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'backend.wsgi.application'
 
-
-if DEBUG:
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
-        }
+DATABASES = {
+    'default': {
+        'ENGINE': env('DB_ENGINE', default='django.db.backends.postgresql'),
+        'NAME': env('DB_NAME', default='postgres'),
+        'USER': env('POSTGRES_USER', default='postgres'),
+        'PASSWORD': env('POSTGRES_PASSWORD', default='postgres'),
+        'HOST': env('DB_HOST', default='db'),
+        'PORT': env('DB_PORT', default='5432')
     }
-
-else:
-    DATABASES = {
-        'default': {
-            'ENGINE': env('DB_ENGINE', default='django.db.backends.postgresql'),
-            'NAME': env('DB_NAME', default='postgres'),
-            'USER': env('POSTGRES_USER', default='postgres'),
-            'PASSWORD': env('POSTGRES_PASSWORD', default='postgres'),
-            'HOST': env('DB_HOST', default='db'),
-            'PORT': env('DB_PORT', default='5432')
-        }
-    }
+}
 
 
 AUTH_PASSWORD_VALIDATORS = [
