@@ -41,4 +41,4 @@ class Subscribe(models.Model):
         ]
 
     def __str__(self):
-        return {self.user}, {self.following}
+        return f'{self.user}, {self.following}'

@@ -8,6 +8,7 @@ cryptography==37.0.2
 defusedxml==0.7.1
 Django==3.2
 django-colorfield==0.7.1
+django-environ==0.9.0
 django-extra-fields==0.3
 django-filter==21.1
 django-templated-mail==1.1.1
@@ -16,6 +17,7 @@ djangorestframework-simplejwt==4.8.0
 djoser==2.1.0
 drf-extra-fields==3.4.0
 flake8==4.0.1
+gunicorn==20.1.0
 idna==3.3
 isort==5.10.1
 itypes==1.2.0
@@ -24,6 +26,8 @@ MarkupSafe==2.1.1
 mccabe==0.6.1
 oauthlib==3.2.0
 Pillow==9.1.1
+psycopg==3.0.15
+psycopg2-binary==2.9.3
 pycodestyle==2.8.0
 pycparser==2.21
 pyflakes==2.4.0
@@ -38,6 +42,3 @@ social-auth-core==4.2.0
 sqlparse==0.4.2
 uritemplate==4.1.1
 urllib3==1.26.9
-django-environ==0.8.1
-gunicorn==20.0.4
-psycopg2-binary==2.9.3

@@ -32,7 +32,7 @@ class Ingredient(models.Model):
         verbose_name_plural = 'Ингридиенты'
 
     def __str__(self):
-        return self.name
+        return f'{self.name}, {self.measurement_unit}'
 
 
 class Recipe(models.Model):
@@ -99,7 +99,7 @@ class RecipeIngredient(models.Model):
             ]
 
     def __str__(self):
-        return {self.ingredient}, {self.recipe}
+        return f'{self.ingredient}, {self.recipe}'
 
 
 class Purchase(models.Model):
@@ -149,4 +149,4 @@ class Favorite(models.Model):
             ]
 
     def __str__(self):
-        return {self.user}, {self.recipe}
+        return f'{self.user}, {self.recipe}'
