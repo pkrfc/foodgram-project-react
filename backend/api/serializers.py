@@ -120,9 +120,7 @@ class IngredientForCreateSerializer(serializers.ModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
-    tags = serializers.PrimaryKeyRelatedField(
-        many=True, queryset=Tag.objects.all()
-    )
+    tags = TagSerializer(read_only=True, many=True)
     author = CustomUserSerializer(read_only=True)
     ingredients = IngredientForCreateSerializer(many=True, write_only=True)
     image = Base64ImageField()
@@ -171,7 +169,7 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def validate(self, data):
         ingredients = data.get('ingredients')
-        tags = data.get('tags')
+        tags = self.initial_data.get('tags')
         ingredients_list = []
         for ingredient in ingredients:
             if ingredient in ingredients_list:
