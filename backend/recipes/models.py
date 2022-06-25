@@ -6,7 +6,7 @@ from users.models import CustomUser
 
 
 class Tag(models.Model):
-    name = models.CharField(verbose_name='Название тэга', max_length=144)
+    name = models.CharField(verbose_name='Название тэга')
     color = ColorField(verbose_name='Цвет тега')
     slug = models.SlugField(verbose_name='Слаг')
 
