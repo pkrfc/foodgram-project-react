@@ -8,9 +8,10 @@ from recipes.models import (Favorite, Ingredient, Purchase, Recipe,
 from rest_framework import filters, status
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.pagination import PageNumberPagination
 from users.models import CustomUser, Subscribe
 
 from .filters import RecipeFilter
@@ -60,17 +61,19 @@ class CustomUserViewSet(UserViewSet):
         url_path='subscriptions'
     )
     def subscriptions(self, request):
-        page = CustomUser.objects.filter(following__user=request.user)
+        user_obj = CustomUser.objects.filter(following__user=request.user)
+        paginator = PageNumberPagination()
+        paginator.page_size = 6
+        result_page = paginator.paginate_queryset(user_obj, request)
         serializer = SubscriptionsSerializer(
-            page, many=True,
-            context={'request': request}
-        )
-        return Response(serializer.data, status=status.HTTP_200_OK)
+            result_page, many=True, context={'current_user': request.user})
+        return paginator.get_paginated_response(serializer.data)
 
 
 class TagViewSet(ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
+    permission_classes = (AllowAny,)
 
 
 class IngredientViewSet(ModelViewSet):
