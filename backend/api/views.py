@@ -97,7 +97,8 @@ class RecipeViewSet(ModelViewSet):
     @action(
         detail=True,
         methods=['POST'],
-        permission_classes=(IsAuthenticated,)
+        permission_classes=(IsAuthenticated,
+                            )
     )
     def shopping_cart(self, request, pk=None):
         return self.add_obj(Purchase, request.user, pk)
