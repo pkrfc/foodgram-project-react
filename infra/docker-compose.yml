@@ -8,9 +8,7 @@ services:
     env_file:
       - ./.env
   backend:
-    build:
-      context: ../backend
-      dockerfile: Dockerfile
+    image: pkrfc/foodgram_backend:v1
     env_file:
       - ./.env
     volumes:
@@ -20,9 +18,7 @@ services:
     depends_on:
       - db
   frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: pkrfc/foodgram_frontend:v1
     volumes:
       - ../frontend/:/app/result_build/
     depends_on:
