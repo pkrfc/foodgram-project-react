@@ -14,7 +14,7 @@ from rest_framework.viewsets import ModelViewSet
 from recipes.models import (Favorite, Ingredient, Purchase, Recipe,
                             RecipeIngredient, Tag)
 from users.models import CustomUser, Subscribe
-from .filters import RecipeFilter
+from .filters import RecipeFilter, IngredientSearchFilter
 from .permissions import IsAuthorOrReadOnly
 from .serializers import (CustomUserSerializer, IngredientSerializer,
                           RecipeInfoSerializer, RecipeReadSerializer,
@@ -80,7 +80,7 @@ class TagViewSet(ModelViewSet):
 class IngredientViewSet(ModelViewSet):
     serializer_class = IngredientSerializer
     queryset = Ingredient.objects.all()
-    filter_backends = (DjangoFilterBackend, filters.SearchFilter)
+    filter_backends = (IngredientSearchFilter,)
     search_fields = ('^name',)
     permission_classes = (AllowAny,)
 
