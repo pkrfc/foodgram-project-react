@@ -20,6 +20,7 @@ from .serializers import (CustomUserSerializer, IngredientSerializer,
                           RecipeInfoSerializer, RecipeReadSerializer,
                           RecipeSerializer, SubscribeSerializer,
                           SubscriptionsSerializer, TagSerializer)
+from .paginators import CustomPagination
 
 
 class CustomUserViewSet(UserViewSet):
@@ -88,6 +89,7 @@ class RecipeViewSet(ModelViewSet):
     permission_classes = (IsAuthorOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filter_class = RecipeFilter
+    pagination_class = CustomPagination
 
     def get_serializer_class(self):
         if self.request.method in ['GET']:
