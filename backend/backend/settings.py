@@ -22,7 +22,7 @@ SECRET_KEY = env('SECRET_KEY', default=get_random_secret_key())
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
 
-DEBUG = True
+DEBUG = False
 
 
 AUTH_USER_MODEL = 'users.CustomUser'
