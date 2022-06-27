@@ -9,8 +9,9 @@ class IngredientSearchFilter(SearchFilter):
 
 class RecipeFilter(filters.FilterSet):
     tags = filters.ModelMultipleChoiceFilter(
-        field_name='tags',
-        queryset=Tag.objects.all()
+        field_name="tags__slug",
+        queryset=Tag.objects.all(),
+        to_field_name="slug",
     )
 
     is_favorited = filters.BooleanFilter(
