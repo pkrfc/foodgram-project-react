@@ -14,13 +14,12 @@ from rest_framework.viewsets import ModelViewSet
 from recipes.models import (Favorite, Ingredient, Purchase, Recipe,
                             RecipeIngredient, Tag)
 from users.models import CustomUser, Subscribe
-from .filters import IngredientSearchFilter
+from .filters import RecipeFilter, IngredientSearchFilter
 from .permissions import IsAuthorOrReadOnly
 from .serializers import (CustomUserSerializer, IngredientSerializer,
                           RecipeInfoSerializer, RecipeReadSerializer,
                           RecipeSerializer, SubscribeSerializer,
                           SubscriptionsSerializer, TagSerializer)
-from .paginators import CustomPagination
 
 
 class CustomUserViewSet(UserViewSet):
@@ -89,8 +88,7 @@ class RecipeViewSet(ModelViewSet):
     queryset = Recipe.objects.all()
     permission_classes = (IsAuthorOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
-    """filter_class = RecipeFilter"""
-    pagination_class = CustomPagination
+    filter_class = RecipeFilter
 
     def get_serializer_class(self):
         if self.request.method in ['GET']:
