@@ -25,6 +25,7 @@ from .serializers import (CustomUserSerializer, IngredientSerializer,
 class CustomUserViewSet(UserViewSet):
     serializer_class = CustomUserSerializer
     queryset = CustomUser.objects.all()
+    pagination_class = None
 
     @transaction.atomic
     @action(
@@ -74,6 +75,7 @@ class TagViewSet(ModelViewSet):
     queryset = Tag.objects.all()
     serializer_class = TagSerializer
     permission_classes = (AllowAny,)
+    pagination_class = None
 
 
 class IngredientViewSet(ModelViewSet):
