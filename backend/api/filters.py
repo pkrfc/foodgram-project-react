@@ -14,10 +14,10 @@ class RecipeFilter(filters.FilterSet):
         to_field_name="slug",
     )
 
-    is_favorited = filters.BooleanFilter(
+    is_favorited = filters.CharFilter(
         method='get_is_favorited'
     )
-    is_in_shopping_cart = filters.BooleanFilter(
+    is_in_shopping_cart = filters.CharFilter(
         method='get_is_in_shopping_cart'
     )
 
@@ -32,5 +32,5 @@ class RecipeFilter(filters.FilterSet):
 
     def get_is_in_shopping_cart(self, queryset, name, value):
         if value:
-            return queryset.filter(user=self.request.user)
+            return queryset.filter(purchase__user=self.request.user)
         return queryset
