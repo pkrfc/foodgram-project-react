@@ -4,16 +4,13 @@ Cайт Foodgram, «Продуктовый помощник».
 
 http://foodgram-bykorolev.ddns.net
 
-```
 
 Сайт с рецептами. Рецепты публикуют сами пользователи.
- В рецепте указаны ингридиенты, фото, описание. Всё это 
+В рецепте указаны ингридиенты, фото, описание. Всё это 
 возможно редактировать. Есть возможность подписаться на пользователя,
 добавить рецепт в избранное и корзину. 
 
 ```
-
-
 Стек технологий: python, django, DRF, git, PostgreSQL, docker, workflows
 ```
 
@@ -21,16 +18,20 @@ http://foodgram-bykorolev.ddns.net
 
 ```
 git clone https://github.com/pkrfc/foodgram-project-react.git
-
 ```
+
 
 Запустите docker-compose
+
 ```
 cd infra/
+
 docker-compose up -d
+
 ```
 
 Выполните миграции, создайте суперпользователя, перенесите статику:
+
 ```
 docker-compose exec backend python manage.py migrate
 docker-compose exec backend python manage.py createsuperuser
