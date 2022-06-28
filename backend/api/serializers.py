@@ -223,6 +223,10 @@ class RecipeReadSerializer(RecipeSerializer):
         ingredients = RecipeIngredient.objects.filter(recipe=obj)
         return RecipeIngredientSerializer(ingredients, many=True).data
 
+    class Meta:
+        model = Recipe
+        fields = '__all__'
+
 
 class PurchaseSerializer(serializers.ModelSerializer):
     user = serializers.PrimaryKeyRelatedField(
