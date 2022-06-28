@@ -179,6 +179,11 @@ class RecipeSerializer(serializers.ModelSerializer):
                     'Ингредиенты не должны повторяться'
                 )
             ingredients_list.append(ingredient)
+            if ingredient['amount'] < 1:
+                raise serializers.ValidationError(
+                    'Количество ингредиента должно быть больше 1'
+                )
+
         data['ingredients'] = ingredients
         if not tags:
             raise serializers.ValidationError('Тэг обязателен')

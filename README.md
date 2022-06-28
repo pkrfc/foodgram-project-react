@@ -13,8 +13,6 @@ http://foodgram-bykorolev.ddns.net
 
 ```
 
-http://foodgram-bykorolev.ddns.net/
-
 
 Стек технологий: python, django, DRF, git, PostgreSQL, docker, workflows
 ```
@@ -38,3 +36,5 @@ docker-compose exec backend python manage.py migrate
 docker-compose exec backend python manage.py createsuperuser
 docker-compose exec backend python manage.py collectstatic --no-input
 ```
+
+Максим Королёв telegram: @maxkorolyov
