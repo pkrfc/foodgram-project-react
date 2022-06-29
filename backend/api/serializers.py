@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
@@ -173,7 +174,9 @@ class RecipeSerializer(serializers.ModelSerializer):
         ingredients = data.get('ingredients')
         tags = data.get('tags')
         ingredients_list = []
-        for ingredient in ingredients:
+        for i in ingredients:
+            ingredient = get_object_or_404(Ingredient,
+                                           id=i['id'])
             if ingredient in ingredients_list:
                 raise serializers.ValidationError(
                     'Ингредиенты не должны повторяться'
